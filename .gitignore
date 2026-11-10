@@ -14,3 +14,5 @@ data/K_*_matlab.csv
 # Artefactos generados localmente
 runs/
 data/python_*.csv
+
+.env
