@@ -1,0 +1,29 @@
+#!/bin/sh
+# Bloquea commits de material privado del hardware (parámetros identificados,
+# sintonía final, trazas/ganancias de Simulink, corridas entrenadas con el
+# modelo privado). Instalar con:  sh scripts/setup_hooks.sh
+# Cualquier archivo con la marca HW-PRIVATE en su contenido también se bloquea.
+
+blocked=0
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+
+for f in $staged; do
+  case "$f" in
+    config/hw_identified.example.yaml) ;;
+    config/hw_identified*|*_private*|runs_private/*|data/simulink_*|data/K_*_matlab*)
+      echo "pre-commit: BLOQUEADO (privado del hardware): $f"; blocked=1 ;;
+  esac
+  if [ -f "$f" ] && git show ":$f" 2>/dev/null | grep -Iq "HW-PRIVATE"; then
+    case "$f" in .githooks/*|scripts/setup_hooks.sh|tests/*|quadrl/*|BOUNDARY_private.md) ;;
+      *) echo "pre-commit: BLOQUEADO (marca HW-PRIVATE): $f"; blocked=1 ;;
+    esac
+  fi
+done
+
+if [ "$blocked" -ne 0 ]; then
+  echo ""
+  echo "Quita esos archivos del stage:  git restore --staged <archivo>"
+  echo "Recuerda: lo que entra al historial de git queda público aunque lo borres después."
+  exit 1
+fi
+exit 0

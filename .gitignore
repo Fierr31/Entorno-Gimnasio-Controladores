@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+*.zip
+
+# --- Privado del hardware: NUNCA versionar (también lo bloquea .githooks/pre-commit) ---
+config/hw_identified*.yaml
+!config/hw_identified.example.yaml
+*_private*
+runs_private/
+data/simulink_*.csv
+data/K_*_matlab.csv
+
+# Artefactos generados localmente
+runs/
+data/python_*.csv

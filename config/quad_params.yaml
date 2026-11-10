@@ -1,0 +1,61 @@
+# =====================================================================
+#  Parámetros NOMINALES del cuadricóptero (F450 3S genérico) — PÚBLICOS
+#
+#  Este archivo se versiona y se publica. NO pongas aquí valores identificados
+#  de tu hardware ni tu sintonía final: esos van en config/hw_identified.yaml
+#  (ignorado por git y bloqueado por el hook). Copia la plantilla:
+#      cp config/hw_identified.example.yaml config/hw_identified.yaml
+#  load_config() fusiona ese archivo encima de este cuando existe.
+#
+#  Las convenciones (orden y giro de motores, tasas de lazo) SÍ deben
+#  coincidir con tu Simulink y con el firmware: no son secretas, son la interfaz.
+# =====================================================================
+
+physics:
+  mass: 1.20                 # kg
+  gravity: 9.81              # m/s^2
+  inertia: [0.0123, 0.0123, 0.0224]   # Jxx, Jyy, Jzz [kg m^2]
+  arm_length: 0.225          # m, centro a motor (F450)
+  c_tau: 0.016               # m, km/kf: par de arrastre por N de empuje
+  tau_motor: 0.035           # s, constante de tiempo típica de motores 22xx
+  thrust_max: 7.0            # N por motor
+  thrust_min: 0.0            # N por motor
+  linear_drag: [0.0, 0.0, 0.0]   # N/(m/s), opcional; 0 si tu Simulink no lo modela
+
+# Geometría en X. Ángulo de cada brazo desde +x_body (grados) y sentido de giro
+# (+1 = CCW visto desde arriba, produce par de reacción +z). El orden define
+# el orden de las 4 entradas: AJÚSTALO al orden de motores de tu Simulink.
+motors:
+  angles_deg: [45, 135, 225, 315]     # convención: debe coincidir con Simulink/firmware
+  spin:       [-1, 1, -1, 1]          # convención: debe coincidir con Simulink/firmware
+
+timing:
+  dt_sim: 0.001              # s, paso de integración (RK4)    # convención: = Simulink/firmware
+  dt_ctrl: 0.005             # s, periodo del lazo de control  # convención: = Simulink/firmware
+  loop_delay: 0.0            # s, retardo del lazo. 0 para la validación inicial;
+                             # ~0.05 típico para la evaluación de robustez
+
+# Pesos LQR ilustrativos (regla de Bryson). Tu sintonía final va en el privado. Orden de estados:
+# [x y z | vx vy vz | phi theta psi | p q r | T1 T2 T3 T4]
+lqr:
+  Q_diag: [11.1, 11.1, 25.0,  4.0, 4.0, 4.0,  30.4, 30.4, 11.1,  1.0, 1.0, 1.0,  0.01, 0.01, 0.01, 0.01]
+  R_diag: [0.25, 0.25, 0.25, 0.25]
+
+# Integradores del LQI sobre [x, y, z, psi]
+lqi:
+  Qi_diag: [2.0, 2.0, 4.0, 1.0]
+
+# Escenario de validación Python vs Simulink (debe ser idéntico en ambos)
+validation:
+  t_final: 10.0
+  x0: [0, 0, 0,  0, 0, 0,  0, 0, 0,  0, 0, 0,  null, null, null, null]   # null = empuje de hover
+  reference: [1.0, -0.5, 1.5, 0.0]   # [x, y, z, psi] escalón en t = 0
+
+# Aleatorización de dominio (se activa en la semana 3). Factores multiplicativos ±.
+randomization:
+  mass: 0.10
+  inertia: 0.15
+  tau_motor: 0.30
+  loop_delay_range: [0.0, 0.08]   # s
+  sensor_noise_std: {pos: 0.01, vel: 0.02, att: 0.005, rate: 0.02}
+  wind_std: 0.5                   # N, fuerza de perturbación horizontal

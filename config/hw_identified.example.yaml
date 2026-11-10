@@ -1,0 +1,26 @@
+# =====================================================================
+#  PLANTILLA (pública, sin valores). Copia a hw_identified.yaml:
+#      cp config/hw_identified.example.yaml config/hw_identified.yaml
+#  hw_identified.yaml está en .gitignore y el hook de pre-commit lo bloquea.
+#
+#  Solo pon las claves que quieras sobreescribir; null = conservar el valor
+#  público. Las listas se reemplazan completas.
+# =====================================================================
+
+physics:
+  mass: null
+  inertia: null          # [Jxx, Jyy, Jzz]
+  arm_length: null
+  c_tau: null
+  tau_motor: null
+  thrust_max: null
+
+timing:
+  loop_delay: null       # retardo medido del lazo
+
+lqr:
+  Q_diag: null
+  R_diag: null
+
+lqi:
+  Qi_diag: null
